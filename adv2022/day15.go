@@ -21,7 +21,17 @@ func Day15() {
 	const multiplier = 4000000
 	sensors, dists, bsRow := Day15ReadInput(yRow)
 	ivs := Day15Ivs(sensors, dists, yRow, math.MinInt, math.MaxInt)
-	fmt.Println(lib.SumItvSizes(ivs) - bsRow)
+
+	SumItvSizes := func(xs [][2]int) int {
+		// assumes intervals are disjoint and non-empty
+		result := 0
+		for _, x := range xs {
+			result += x[1] - x[0] + 1
+		}
+		return result
+	}
+
+	fmt.Println(SumItvSizes(ivs) - bsRow)
 	for row := 0; row <= upb; row++ {
 		ivs = Day15Ivs(sensors, dists, row, 0, upb)
 		if len(ivs) > 1 {
@@ -77,12 +87,12 @@ func Day15Ivs(sensors [][2]int, dists []int, row, lwb, upb int) [][2]int {
 		dCol := dists[i] - lib.Abs(s[0]-row)
 		if dCol > 0 {
 			intv := [2]int{s[1] - dCol, s[1] + dCol}
-			intv = lib.Intersect(intv, cutIntv)
+			intv = lib.IntersectItvs(intv, cutIntv)
 			if !lib.IsEmptyItv(intv) {
 				intvs = append(intvs, intv)
 			}
 		}
 	}
 	lib.SortLess2[int](intvs)
-	return lib.MergeIntvs(intvs)
+	return lib.MergeItvs(intvs)
 }

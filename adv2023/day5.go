@@ -73,7 +73,7 @@ func Day5b(values []int, mps [][][3]int) {
 			dest, src, n := conv[0], conv[1], conv[2]
 			dom := [2]int{src, src + n}
 			offset := dest - src
-			its := lib.Intersect(itv, dom)
+			its := lib.IntersectItvs(itv, dom)
 			if its != [2]int{} {
 				img := [2]int{its[0] + offset, its[1] + offset}
 				mapped = append(mapped, img)
@@ -109,7 +109,7 @@ func Day5b(values []int, mps [][][3]int) {
 			next = append(next, transformItv(mp, itv)...)
 		}
 		lib.SortSliceLessFunc(next, lib.Less2)
-		lib.MergeIntvs(next)
+		lib.MergeItvs(next)
 		itvs = next
 	}
 	fmt.Println(itvs[0][0])

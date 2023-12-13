@@ -4,12 +4,11 @@ import (
 	"container/list"
 	"fmt"
 	"math"
-	"sort"
 	"strings"
 	"testing"
-
-	"golang.org/x/exp/constraints"
 )
+
+const EPSILON = 1e-12
 
 var AocFunMap map[int][]func()
 
@@ -36,272 +35,6 @@ func AssertSlicesEqual[E comparable](t *testing.T, got, want []E) {
 	}
 }
 
-// Generics
-
-type Integer interface {
-	constraints.Integer
-}
-type Num interface {
-	constraints.Integer | constraints.Float
-}
-
-type SignedNum interface {
-	constraints.Signed | constraints.Float
-}
-
-// Ordered represents the set of types for which the '<' operator work.
-type Ordered interface {
-	constraints.Integer | constraints.Float | ~string
-}
-
-type Pair[U any, V any] struct {
-	Fst U
-	Snd V
-}
-
-func (p Pair[U, V]) Extract() (U, V) {
-	return p.Fst, p.Snd
-}
-
-func MkPair[U any, V any](u U, v V) Pair[U, V] {
-	return Pair[U, V]{u, v}
-}
-
-func Swap[T any](a [2]T) [2]T {
-	return [2]T{a[1], a[0]}
-}
-
-func Abs[T SignedNum](a T) T {
-	if a >= T(0) {
-		return a
-	} else {
-		return -a
-	}
-}
-
-func Sign[T SignedNum](a T) int {
-	switch {
-	case a < 0:
-		return -1
-	case a > 0:
-		return 1
-	default:
-		return 0
-	}
-}
-
-func Append[T any](xs *[]T, el ...T) {
-	*xs = append(*xs, el...)
-}
-
-func Last[E any](xs []E) E {
-	return xs[len(xs)-1]
-}
-
-func Map[T, S any](f func(T) S, xs []T) []S {
-	result := make([]S, len(xs))
-	for i, t := range xs {
-		result[i] = f(t)
-	}
-	return result
-}
-
-func PrefixSums[T Num](xs []T) []T {
-	if len(xs) == 0 {
-		return xs
-	}
-	res := make([]T, 0, len(xs))
-	sum := T(0)
-	for _, x := range xs {
-		sum += x
-		res = append(res, sum)
-	}
-	return res
-}
-
-func PrefixSumsFunc[T Num](f func(int) T, n int) []T {
-	res := make([]T, 1, n)
-	sum := T(0)
-	for i := 0; i < n; i++ {
-		sum += f(i)
-		res = append(res, sum)
-	}
-	return res
-}
-
-func Prod[T Num](xs []T) T {
-	result := T(1)
-	for _, x := range xs {
-		result *= x
-	}
-	return result
-}
-
-func Sum[T Num](xs []T) T {
-	result := T(0)
-	for _, x := range xs {
-		result += x
-	}
-	return result
-}
-
-func ModInt(a, b int) int {
-	// result is positive if b is positivew
-	return (a%b + b) % b
-}
-
-func Dist2[T SignedNum](a, b [2]T) T {
-	return Abs(b[0]-a[0]) + Abs(b[1]-a[1])
-}
-
-func Add2[T Num](p, q [2]T) [2]T {
-	return [2]T{p[0] + q[0], p[1] + q[1]}
-}
-
-func Add3[T Num](p, q [3]T) [3]T {
-	return [3]T{p[0] + q[0], p[1] + q[1], p[2] + q[2]}
-}
-
-func Greater[T Ordered](p, q T) bool {
-	return p > q
-}
-
-func Greater2[T Ordered](p, q [2]T) bool {
-	return p[0] > q[0] || p[0] == q[0] && p[1] > q[1]
-}
-
-func Greater3[T Ordered](a, b [3]T) bool {
-	return a[0] > b[0] || a[0] == b[0] && a[1] > b[1] ||
-		a[0] == b[0] && a[1] == b[1] && a[2] > b[2]
-}
-
-func Less2[T Ordered](a, b [2]T) bool {
-	return a[0] < b[0] || a[0] == b[0] && a[1] < b[1]
-}
-
-func LessOrEqual2[T Ordered](a, b [2]T) bool {
-	return a == b || a[0] < b[0] || a[0] == b[0] && a[1] < b[1]
-}
-
-func Less3[T Ordered](a, b [3]T) bool {
-	return a[0] < b[0] || a[0] == b[0] && a[1] < b[1] ||
-		a[0] == b[0] && a[1] == b[1] && a[2] < b[2]
-}
-
-func MkNumsUpto[E Num](n int) []E {
-	result := make([]E, n)
-	for i := range result {
-		result[i] = E(i)
-	}
-	return result
-}
-
-func MkSliceFilled[E any](rows int, t E) []E {
-	result := make([]E, rows)
-	for i := range result {
-		result[i] = t
-	}
-	return result
-}
-
-func MkSlice2[E any](rows, cols int) [][]E {
-	result := make([][]E, rows)
-	for i := range result {
-		result[i] = make([]E, cols)
-	}
-	return result
-}
-
-func MkSlice2Filled[E any](rows, cols int, t E) [][]E {
-	result := make([][]E, rows)
-	for i := range result {
-		result[i] = make([]E, cols)
-		for j := range result[i] {
-			result[i][j] = t
-		}
-	}
-	return result
-}
-
-func PopBack[E any](x *[]E) E {
-	n := len(*x) - 1
-	res := (*x)[n]
-	*x = (*x)[:n]
-	return res
-}
-
-func PopFront[E any](x *[]E) E {
-	res := (*x)[0]
-	*x = (*x)[1:]
-	return res
-}
-
-func PushBack[E any](x *[]E, e E) {
-	*x = append((*x), e)
-}
-
-func PushFront[E any](x *[]E, e E) {
-	n := len(*x)
-	*x = append((*x), e)
-	copy((*x)[1:], (*x)[:n])
-	(*x)[0] = e
-}
-
-func Reverse[E any](x []E) {
-	for i, j := 0, len(x)-1; i < j; i, j = i+1, j-1 {
-		x[i], x[j] = x[j], x[i]
-	}
-}
-
-func SetMax[T Ordered](a *T, b T) {
-	if b > *a {
-		*a = b
-	}
-}
-
-func SetMin[T Ordered](a *T, b T) {
-	if b < *a {
-		*a = b
-	}
-}
-
-func SlicesEqual[E comparable](s1, s2 []E) bool {
-	// https://pkg.go.dev/golang.org/x/exp/slices#Equal
-	if len(s1) != len(s2) {
-		return false
-	}
-	for i := range s1 {
-		if s1[i] != s2[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func SortLess2[T Ordered](s [][2]int) {
-	sort.Slice(s, func(i, j int) bool {
-		return Less2(s[i], s[j])
-	})
-}
-
-func SortSliceDecr[T Ordered](xs []T) {
-	sort.Slice(xs, func(i, j int) bool {
-		return xs[i] > xs[j]
-	})
-}
-
-func SortSliceFunc[E any, T Ordered](xs []E, f func(E) T) {
-	sort.Slice(xs, func(i, j int) bool {
-		return f(xs[i]) < f(xs[j])
-	})
-}
-
-func SortSliceLessFunc[E any](xs []E, less func(a, b E) bool) {
-	sort.Slice(xs, func(i, j int) bool {
-		return less(xs[i], xs[j])
-	})
-}
-
 // Maths
 
 func Gcd(a, b int) int {
@@ -318,9 +51,28 @@ func Gcd(a, b int) int {
 	return a
 }
 
-func Lcm(a, b int) int {
-	gab := Gcd(a, b)
-	return (a / gab) * b
+func Lcm(xs ...int) int {
+	if len(xs) == 1 {
+		return xs[0]
+	}
+	lcm := func(a, b int) int {
+		gab := Gcd(a, b)
+		return (a / gab) * b
+	}
+	res := xs[0]
+	for i := 1; i < len(xs); i++ {
+		res = lcm(res, xs[i])
+	}
+	return res
+}
+
+func PolygonArea(pts [][2]int) int {
+	area := 0
+	for i := range pts {
+		p, q := pts[i], pts[(i+1)%len(pts)]
+		area += (p[0] - q[0]) * (p[1] + q[1])
+	}
+	return Abs(area / 2)
 }
 
 func QuadraticSolve(a, b, c float64) (float64, float64, bool) {
@@ -336,16 +88,34 @@ func QuadraticSolve(a, b, c float64) (float64, float64, bool) {
 	return x1, x2, true
 }
 
-func SurfaceOfCuboid(a, b, c int) int {
-	return 2 * (a*b + a*c + b*c)
+func SurfaceOfCuboid3(width, height, depth int) int {
+	return 2 * (width*height + width*depth + height*depth)
 }
 
-func VolumeOfCuboid(a, b, c int) int {
-	return a * b * c
+func TernarySearch(f func(float64) float64, a, b, precision float64) float64 {
+	// find minimum of f on interval [a,b] https://en.wikipedia.org/wiki/Ternary_search
+	for math.Abs(b-a) >= precision {
+		left_third := a + (b-a)/3
+		right_third := b - (b-a)/3
+		if f(left_third) > f(right_third) {
+			a = left_third
+		} else {
+			b = right_third
+		}
+	}
+	return (a + b) / 2
 }
 
-// Intersection of half-open intervals
-func Intersect[T Ordered](x, y [2]T) [2]T {
+func IntersectCuboids[T Ordered](xs, ys [][2]T) [][2]T {
+	res := make([][2]T, len(xs))
+	for i := range res {
+		res[i] = IntersectItvs(xs[i], ys[i])
+	}
+	return res
+}
+
+// Intersection of two (closed) intervals
+func IntersectItvs[T Ordered](x, y [2]T) [2]T {
 	a, b := x[0], x[1]
 	c, d := y[0], y[1]
 	var result [2]T
@@ -362,12 +132,24 @@ func IsEmptyItv[T Ordered](a [2]T) bool {
 	return a[0] > a[1]
 }
 
-func SumItvSizes(xs [][2]int) int {
-	// assumes intervals are disjoint and non-empty
-	result := 0
-	for _, x := range xs {
-		result += x[1] - x[0] + 1
+func MergeItvs[T Ordered](itvs [][2]T) [][2]T {
+	// assume itvs is lex sorted
+	if len(itvs) <= 1 {
+		return itvs
 	}
+	result := make([][2]T, 1)
+	result[0] = itvs[0]
+	itvs = itvs[1:]
+	last := 0
+	for _, itv := range itvs {
+		if itv[0] <= result[last][1] {
+			result[last][1] = max(itv[1], result[last][1])
+		} else {
+			result = append(result, itv)
+			last++
+		}
+	}
+
 	return result
 }
 

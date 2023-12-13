@@ -14,7 +14,7 @@ func Day16() {
 	// Part 2 uses a branch-and-bound algorithm with memoization
 	// It could be made faster by adding heuristics for selecting moves
 	flows, tunnels, _, start := Day16Input()
-	dist := lib.FloydWarshallEdgesOne(tunnels)
+	dist := lib.FloydWarshallUnitEdges(tunnels)
 	nonZeros := make([]int, 0)
 	for i := range flows {
 		if flows[i] > 0 {

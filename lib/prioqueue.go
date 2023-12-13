@@ -289,22 +289,25 @@ func (q *PQInt[T]) Resize(n int) {
 }
 
 // PrioQueue is a generic heap of pointers to int-indexed values
-// It may require another slice or map to access the pointers
-// See DoctorKattisWithPrioQueue for an example
+
+type PQItem[T any] struct {
+	Value T
+	Index int
+}
 
 type PQueue[T any] struct {
-	Heap[*Pair[T, int]]
+	Heap[*PQItem[T]]
 }
 
 func NewPQueue[T any](less func(a, b T) bool) *PQueue[T] {
 	q := &PQueue[T]{}
-	q.less = func(a, b *Pair[T, int]) bool {
-		return less(a.Fst, b.Fst)
+	q.less = func(a, b *PQItem[T]) bool {
+		return less(a.Value, b.Value)
 	}
 	q.swap = func(i, j int) {
 		q.data[i], q.data[j] = q.data[j], q.data[i]
-		q.data[i].Snd = i
-		q.data[j].Snd = j
+		q.data[i].Index = i
+		q.data[j].Index = j
 	}
 	q.Init()
 	return q
@@ -320,19 +323,19 @@ func (q *PQueue[T]) String() string {
 	return sb.String()
 }
 
-func (q *PQueue[T]) Push(x *Pair[T, int]) {
-	x.Snd = len(q.data)
+func (q *PQueue[T]) Push(x *PQItem[T]) {
+	x.Index = len(q.data)
 	q.Heap.Push(x)
 }
 
 func (q *PQueue[T]) Peek() T {
-	return q.Heap.Peek().Fst
+	return q.Heap.Peek().Value
 }
 
 func (q *PQueue[T]) Pop() T {
-	return q.Heap.Pop().Fst
+	return q.Heap.Pop().Value
 }
 
 func (q *PQueue[T]) Remove(i int) T {
-	return q.Heap.Remove(i).Fst
+	return q.Heap.Remove(i).Value
 }

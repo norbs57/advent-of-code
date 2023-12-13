@@ -83,6 +83,6 @@ func Day18() {
 		q, next = next, q
 		next = next[:0]
 	}
-	surfCuboid := lib.SurfaceOfCuboid(size[0], size[1], size[2])
+	surfCuboid := lib.SurfaceOfCuboid3(size[0], size[1], size[2])
 	fmt.Println(surfaceArea(seen) - surfCuboid)
 }

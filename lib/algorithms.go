@@ -1,29 +1,10 @@
 package lib
 
-import "math"
+import (
+	"math"
+)
 
-func MergeIntvs(intvs [][2]int) [][2]int {
-	// assume intvs have been lex sorted
-	if len(intvs) <= 1 {
-		return intvs
-	}
-	result := make([][2]int, 1)
-	result[0] = intvs[0]
-	intvs = intvs[1:]
-	last := 0
-	for _, intv := range intvs {
-		if intv[0] <= result[last][1] {
-			result[last][1] = max(intv[1], result[last][1])
-		} else {
-			result = append(result, intv)
-			last++
-		}
-	}
-
-	return result
-}
-
-func FloydWarshallEdgesOne(g [][]int) (dist [][]int) {
+func FloydWarshallUnitEdges(g [][]int) (dist [][]int) {
 	// Floyd-Warshall algorith for a graph where all edges have length one
 	// assumes that graph has no self-loops
 	const inf = math.MaxInt
@@ -69,4 +50,45 @@ func SecantSearch(f func(float64) float64, a, b, precision float64) float64 {
 		fa, fb = fb, fc
 	}
 	return (a + b) / 2
+}
+
+// https://en.wikipedia.org/wiki/Stoer%E2%80%93Wagner_algorithm
+// https://github.com/kth-competitive-programming/kactl
+// No prio queue, hence runtime is O(V^3)
+
+func GlobalMinCut(mat [][]int) (int, []int) {
+	bestCutSize, bestCut := math.MaxInt, []int{}
+	n := len(mat)
+	co := make([][]int, n)
+	for i := range co {
+		co[i] = []int{i}
+	}
+	for ph := 1; ph < n; ph++ {
+		w := make([]int, n)
+		copy(w, mat[0])
+		var s, t int
+		for it := 0; it < n-ph; it++ { // O(V^2) -> O(E log V) with prio. queue
+			w[t] = math.MinInt
+			s = t
+			t = MaxIdx(w)
+			for i := 0; i < n; i++ {
+				w[i] += mat[t][i]
+			}
+		}
+		cutSize := w[t] - mat[t][t]
+		if cutSize < bestCutSize {
+			bestCutSize = cutSize
+			bestCut = make([]int, len(co[t]))
+			copy(bestCut, co[t])
+		}
+		co[s] = append(co[s], co[t]...)
+		for i := 0; i < n; i++ {
+			mat[s][i] += mat[t][i]
+		}
+		for i := 0; i < n; i++ {
+			mat[i][s] = mat[s][i]
+		}
+		mat[0][t] = math.MinInt
+	}
+	return bestCutSize, bestCut
 }

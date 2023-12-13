@@ -14,9 +14,6 @@ import (
 	"github.com/norbs57/advofcode/lib"
 )
 
-const ext = ".txt"
-const dataFolder = "./data"
-
 func init() {
 	adv2022.AssignFuns()
 	adv2023.AssignFuns()
@@ -51,8 +48,7 @@ func TestOne(t *testing.T) {
 }
 
 func AdvOneTest(t *testing.T, year, day int, answers []string, fn func()) {
-	yearStr, dayStr := strconv.Itoa(year), strconv.Itoa(day)
-	in := filepath.Join(dataFolder, yearStr, "in"+dayStr+ext)
+	in := InputFile(year, day)
 	defer lib.SetStdin(in).Close()
 	out := lib.CaptureStdout(fn)
 	sc := bufio.NewScanner(bytes.NewReader(out))
@@ -65,6 +61,11 @@ func AdvOneTest(t *testing.T, year, day int, answers []string, fn func()) {
 
 func ReadAnswers(year int) []string {
 	yearStr := strconv.Itoa(year)
-	ans := filepath.Join(dataFolder, yearStr, "answers"+ext)
+	ans := filepath.Join("./adv"+yearStr, "data", "answers.txt")
 	return lib.ReadLinesFromFile(ans)
+}
+
+func InputFile(year, day int) string {
+	yearStr, dayStr := strconv.Itoa(year), strconv.Itoa(day)
+	return filepath.Join("./adv"+yearStr, "data", "in"+dayStr+".txt")
 }

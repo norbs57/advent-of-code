@@ -24,10 +24,10 @@ func Day24() {
 		return 0 <= r && r < R && 0 <= c && c < C
 	}
 	isBlizz := func(r, c, t int) bool {
-		r0 := lib.ModInt(r-t, R)
-		r1 := lib.ModInt(r+t, R)
-		c0 := lib.ModInt(c-t, C)
-		c1 := lib.ModInt(c+t, C)
+		r0 := lib.Mod(r-t, R)
+		r1 := lib.Mod(r+t, R)
+		c0 := lib.Mod(c-t, C)
+		c1 := lib.Mod(c+t, C)
 		return grid[r0][c] == 'v' || grid[r1][c] == '^' ||
 			grid[r][c0] == '>' || grid[r][c1] == '<'
 	}

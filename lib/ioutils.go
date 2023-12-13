@@ -60,10 +60,24 @@ func ReadLines() []string {
 	return ReadStringsFromScanner(bufio.NewScanner(os.Stdin))
 }
 
+func ReadByteSlices() [][]byte {
+	return ReadByteSlicesFromScanner(bufio.NewScanner(os.Stdin))
+}
+
 func ReadStringsFromScanner(sc *bufio.Scanner) []string {
 	result := make([]string, 0)
 	for sc.Scan() {
 		result = append(result, strings.TrimSpace(sc.Text()))
+	}
+	return result
+}
+
+func ReadByteSlicesFromScanner(sc *bufio.Scanner) [][]byte {
+	result := make([][]byte, 0)
+	for sc.Scan() {
+		line := make([]byte, len(sc.Bytes()))
+		copy(line, sc.Bytes())
+		result = append(result, line)
 	}
 	return result
 }
@@ -73,6 +87,12 @@ func ReadTextFromScanner(sc *bufio.Scanner) string {
 	return strings.TrimSpace(sc.Text())
 }
 
+
+func ScanFloat(sc *bufio.Scanner) float64 {
+	sc.Scan()
+	result, _ := strconv.ParseFloat(sc.Text(), 64)
+	return result
+}
 func ScanInt(sc *bufio.Scanner) int {
 	sc.Scan()
 	num, _ := strconv.Atoi(sc.Text())
